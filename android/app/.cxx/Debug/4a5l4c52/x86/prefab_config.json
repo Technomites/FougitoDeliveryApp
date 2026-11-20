@@ -1,0 +1,11 @@
+{
+  "enabled": true,
+  "prefabPath": "/Users/apple/.gradle/caches/modules-2/files-2.1/com.google.prefab/cli/2.1.0/aa32fec809c44fa531f01dcfb739b5b3304d3050/cli-2.1.0-all.jar",
+  "packages": [
+    "/Users/apple/Desktop/Hammad/FougitoDeliver/node_modules/react-native-vision-camera/android/build/intermediates/prefab_package/debug/prefab",
+    "/Users/apple/.gradle/caches/8.10.2/transforms/19baff6d99d50a86c569a9a639a068de/transformed/jetified-react-android-0.77.0-debug/prefab",
+    "/Users/apple/Desktop/Hammad/FougitoDeliver/node_modules/react-native-reanimated/android/build/intermediates/prefab_package/debug/prefab",
+    "/Users/apple/.gradle/caches/8.10.2/transforms/08aed7b9f9b16cf03b8c9f68f1b1ab81/transformed/jetified-hermes-android-0.77.0-debug/prefab",
+    "/Users/apple/.gradle/caches/8.10.2/transforms/1ced836bc93a735c1818462b6924fd83/transformed/jetified-fbjni-0.7.0/prefab"
+  ]
+}

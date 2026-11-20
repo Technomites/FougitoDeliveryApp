@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "638660430483",
+    "project_id": "fougito-deliver-9c900",
+    "storage_bucket": "fougito-deliver-9c900.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:638660430483:android:680d9b89bf683ff6129b66",
+        "android_client_info": {
+          "package_name": "com.fougitodeliver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "638660430483-81q2lcb3sblflg0b6k3vapt7ei0iu2uu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDrisMe3WDRsS9HuleBmNA8blylfOBUs3Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "638660430483-81q2lcb3sblflg0b6k3vapt7ei0iu2uu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
