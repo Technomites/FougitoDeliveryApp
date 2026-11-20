@@ -13,10 +13,7 @@ import { C, F, B } from '../../Constants/tokens';
 import { useDevice } from '../useLayout';
 import IconSquare from './IconSquare';
 
-const LOGO = require('../../assets/Images/fougito_logo.png');
-const LOGO_RATIO = 150 / 70;
-
-// Home header: ink menu square, logo, spacer, bell square with accent count badge.
+// Home header: ink menu square, spacer, bell square with accent count badge.
 const MainHeader = props => {
   const [Notifation, SetNotification] = useState();
   const userSuccessData = useSelector(state => state.auth.userSuccessData);
@@ -56,7 +53,6 @@ const MainHeader = props => {
       });
   };
 
-  const logoH = isPhone ? 20 : 22;
   return (
     <SafeAreaView style={Styles.safe}>
       <View
@@ -65,12 +61,6 @@ const MainHeader = props => {
           { height: homeHeader, paddingHorizontal: gutter },
         ]}>
         <IconSquare name="menu" variant="ink" onPress={props.onPress} />
-
-        <Image
-          style={{ height: logoH, width: logoH * LOGO_RATIO }}
-          resizeMode="contain"
-          source={LOGO}
-        />
 
         <View style={Styles.spacer} />
 
