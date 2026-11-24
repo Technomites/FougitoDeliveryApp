@@ -1337,7 +1337,7 @@ export default function OrderDetail(props) {
         navigationBarTranslucent
       //visible={true}
       >
-        <View style={[styles.centeredView, isPhone && styles.sheetScrim, modalPad]}>
+        <View style={[styles.centeredView, modalPad, isPhone && styles.sheetScrim, isPhone && { paddingBottom: 0 }]}>
           <View
             style={[
               styles.dialogCard,
@@ -1411,7 +1411,7 @@ export default function OrderDetail(props) {
               </View>
             </ScrollView>
 
-            <View style={[styles.dialogFooter, { paddingHorizontal: isPhone ? 16 : 28 }]}>
+            <View style={[styles.dialogFooter, { paddingHorizontal: isPhone ? 16 : 28 }, isPhone && { paddingBottom: Math.max(14, rootInsets.bottom) }]}>
               <TouchableOpacity
                 activeOpacity={0.7}
                 style={dialogStyles.outlineBtn}

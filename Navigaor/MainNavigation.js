@@ -436,7 +436,7 @@ const MainNavigation = () => {
       ) : null}
       <Stack.Navigator
         initialRouteName="SplashScreen"
-        screenOptions={{ headerShown: false }}>
+        screenOptions={{ headerShown: false, gestureEnabled: false }}>
         <Stack.Screen name="SplashScreen" component={SplashScreen} />
         <Stack.Screen name="MiddleWareScreen" component={MiddleWareScreen} />
         <Stack.Screen name="Auth" component={AutNavigator} />

@@ -24,6 +24,7 @@ import {
 import { HardCode } from '../../Constants/texting';
 import { C, F } from '../../Constants/tokens';
 import useLayout from '../useLayout';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DialogCard, DialogFooter, IconTile, dialogStyles } from './Dialog';
 const Qrpopup = props => {
   const [qrvalue, setQrvalue] = useState('');
@@ -31,6 +32,7 @@ const Qrpopup = props => {
   const [camscanner, setCamScanner] = useState(false);
   const [scanpermission, setScanPermission] = useState(true);
   const layout = useLayout();
+  const insets = useSafeAreaInsets();
   // const [frameProcessor, barcodes] = useScanBarcodes([BarcodeFormat.QR_CODE]);
 
   const devices = useCameraDevices();
@@ -102,9 +104,18 @@ const Qrpopup = props => {
   const frameSize =
     layout === 'tabletLandscape' ? 360 : layout === 'tabletPortrait' ? 440 : 240;
   return (
-    props.state == true && (
+    // Full-screen layer (Modal) so the camera covers the whole display no matter
+    // which screen opens it (Order Detail sits inside a SafeAreaView).
+    <Modal
+      visible={props.state == true}
+      animationType="fade"
+      transparent
+      statusBarTranslucent
+      navigationBarTranslucent
+      supportedOrientations={['portrait', 'landscape']}
+      onRequestClose={props.pressback}>
       <View style={{ ...styles.centeredView, zIndex: 10 }}>
-        {camscanner && (
+        {camscanner && device != null && (
           <Camera
             style={StyleSheet.absoluteFill}
             device={device}
@@ -129,6 +140,7 @@ const Qrpopup = props => {
           title={HardCode.ScanQRCode}
           refresh={qrvalue}
           onpressback={props.pressback}
+          top={insets.top}
         // onpress={() => {
         // //   setvisible(false);
         // //   setScanPermission(true);
@@ -183,7 +195,7 @@ const Qrpopup = props => {
           </>
         )}
       </View>
-    )
+    </Modal>
   );
 };
 

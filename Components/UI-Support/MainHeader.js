@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Image,
@@ -7,51 +7,13 @@ import {
   SafeAreaView,
 } from 'react-native';
 
-import { useSelector } from 'react-redux';
-import { AUTHTOKENSTATEDISPATH } from '../../Store/Auth/AuthActionConst';
 import { C, F, B } from '../../Constants/tokens';
 import { useDevice } from '../useLayout';
 import IconSquare from './IconSquare';
 
 // Home header: ink menu square, spacer, bell square with accent count badge.
 const MainHeader = props => {
-  const [Notifation, SetNotification] = useState();
-  const userSuccessData = useSelector(state => state.auth.userSuccessData);
-  const BaseUrl = useSelector(state => state.auth.BaseUrl);
   const { isPhone, gutter, homeHeader } = useDevice();
-
-  useEffect(() => {
-    GetNotification();
-  }, []);
-
-  const GetNotification = async () => {
-    var myHeaders = new Headers();
-    myHeaders.append(
-      'Authorization',
-      `Bearer ${userSuccessData?.Result?.AuthData?.TokenInfo?.Token}`,
-    );
-
-    var requestOptions = {
-      method: 'GET',
-      headers: myHeaders,
-      redirect: 'follow',
-    };
-
-    fetch(`${BaseUrl}Notification/NewNotificationCount/ByUser`, requestOptions)
-      .then(response => response.json())
-      .then(result => {
-        if (result.Status === 'Success') {
-          SetNotification(result?.Result);
-        }
-      })
-      .catch(error => {
-        dispatch({
-          type: AUTHTOKENSTATEDISPATH,
-          payload: true,
-        });
-        console.log('error', error)
-      });
-  };
 
   return (
     <SafeAreaView style={Styles.safe}>
@@ -68,9 +30,12 @@ const MainHeader = props => {
           name="bell"
           onPress={props.onNotification}
           style={Styles.bell}>
-          {props?.Notifation >= 0 && (
+          {/* Count comes from HomeScreen; hide the badge when there is nothing new. */}
+          {Number(props?.Notifation) > 0 && (
             <View style={Styles.notifationView}>
-              <Text style={Styles.notifationText}>{props?.Notifation}</Text>
+              <Text style={Styles.notifationText}>
+                {Number(props.Notifation) > 99 ? '99+' : props.Notifation}
+              </Text>
             </View>
           )}
         </IconSquare>

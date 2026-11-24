@@ -14,7 +14,7 @@ const Stack = createStackNavigator();
 
 const AutNavigator = () => {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={{ headerShown: false, gestureEnabled: false }}>
       <Stack.Screen name="LoginScreen" component={LoginScreen} />
       <Stack.Screen name="FingerPrintAuthentication" component={FingerPrintAuthentication} />
 

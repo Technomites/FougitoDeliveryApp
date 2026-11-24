@@ -39,7 +39,7 @@ import ReactNativeBiometrics, { BiometryTypes } from 'react-native-biometrics';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { HardCode } from '../../Constants/texting';
 import { _setBaseUrlToggle, SetUrlConst } from '../../Components/BaseUrl';
-import { getStatusBarHeight } from 'react-native-status-bar-height';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AuthBrandPane from '../../Components/UI-Support/AuthBrandPane';
 import useLayout from '../../Components/useLayout';
 import { C, F, B } from '../../Constants/tokens';
@@ -201,7 +201,8 @@ const FingerPrintAuthentication = props => {
   const layout = useLayout();
   const landscape = layout === 'tabletLandscape';
   const phone = layout === 'phone';
-  const topInset = getStatusBarHeight();
+  // Real notch / Dynamic Island height (the lookup table misses new iPhones).
+  const topInset = useSafeAreaInsets().top;
 
   return (
     <TouchableOpacity

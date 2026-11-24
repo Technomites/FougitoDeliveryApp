@@ -103,7 +103,9 @@ const SettingScreen = props => {
                 />
                 <SubHeading
                   style={[style.text, {fontSize: grid.isPhone ? 28 : 36}]}
-                  text={` ${userInfo?.Result?.FirstName} ${userInfo?.Result?.LastName}`}
+                  text={[userInfo?.Result?.FirstName, userInfo?.Result?.LastName]
+                    .filter(Boolean)
+                    .join(' ')}
                 />
               </View>
             </View>

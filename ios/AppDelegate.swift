@@ -49,7 +49,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
       initialProperties: appDelegate.initialProps,
       launchOptions: nil
     )
-    let rootViewController = appDelegate.createRootViewController()
+    let rootViewController = WindowControlsAwareViewController()
     appDelegate.setRootView(rootView, toRootViewController: rootViewController)
 
     let window = UIWindow(windowScene: windowScene)
@@ -61,5 +61,21 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
   func windowScene(_ windowScene: UIWindowScene, didUpdate previousCoordinateSpace: UICoordinateSpace, interfaceOrientation previousInterfaceOrientation: UIInterfaceOrientation, traitCollection previousTraitCollection: UITraitCollection) {
     NotificationCenter.default.post(name: Notification.Name("RCTWindowFrameDidChangeNotification"), object: self)
+  }
+}
+
+// iPadOS 26+ windowed mode: the close/minimise buttons sit in the top-left corner
+// but are not part of the normal safe area. Extend the safe area so React Native
+// content (logo, back buttons) is laid out below them. No effect on iPhone.
+class WindowControlsAwareViewController: UIViewController {
+  override func viewDidLayoutSubviews() {
+    super.viewDidLayoutSubviews()
+    guard #available(iOS 26.0, *) else { return }
+    let cornerTop = view.edgeInsets(for: .safeArea(cornerAdaptation: .vertical)).top
+    let baseTop = view.safeAreaInsets.top - additionalSafeAreaInsets.top
+    let extra = max(0, cornerTop - baseTop)
+    if abs(additionalSafeAreaInsets.top - extra) > 0.5 {
+      additionalSafeAreaInsets.top = extra
+    }
   }
 }

@@ -33,6 +33,7 @@ import { HardCode } from '../Constants/texting';
 import { C, F } from '../Constants/tokens';
 import { setNavBarTone } from '../Components/NavBarFrame';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const SplashScreen = props => {
   const [refData, setRefData] = useState();
@@ -215,6 +216,9 @@ const SplashScreen = props => {
   const phone = layout === 'phone';
   const landscape = layout === 'tabletLandscape';
   const headSize = landscape ? 96 : phone ? 52 : 84;
+  // iOS: keep logo clear of the clock/battery (Android pads via FocusAwareStatusBar).
+  const insets = useSafeAreaInsets();
+  const iosTop = Platform.OS === 'ios' ? insets.top : 0;
 
   return (
     //     <View
@@ -262,10 +266,10 @@ const SplashScreen = props => {
         style={[
           styles.content,
           landscape
-            ? { paddingTop: 56, paddingBottom: 96, paddingHorizontal: 64 }
+            ? { paddingTop: 56 + iosTop, paddingBottom: 96, paddingHorizontal: 64 }
             : phone
-              ? { paddingTop: 28, paddingBottom: 72, paddingHorizontal: 24 }
-              : { paddingTop: 64, paddingBottom: 112, paddingHorizontal: 56 },
+              ? { paddingTop: 28 + iosTop, paddingBottom: 72, paddingHorizontal: 24 }
+              : { paddingTop: 64 + iosTop, paddingBottom: 112, paddingHorizontal: 56 },
         ]}>
         <View style={styles.topRow}>
           <WhiteLogo height={phone ? 32 : 40} />

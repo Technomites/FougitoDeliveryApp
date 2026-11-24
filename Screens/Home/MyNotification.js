@@ -101,7 +101,10 @@ const MyNotification = props => {
     }
   };
   function LoadMoreNotfifcations() {
-    setOffsetproperty(offsetproperty + 1);
+    // Only ask for the next page when the last one was full (pageSize 50).
+    if (Array.isArray(notificationSet) && notificationSet.length >= 50) {
+      setOffsetproperty(offsetproperty + 1);
+    }
   }
 
   const getNotification = pageSize => {
@@ -138,7 +141,12 @@ const MyNotification = props => {
         if (result.Status === 'Success') {
           setIsRefresh(false);
           setnotificationSet(result.Result);
-          setmyNotoficationData([...myNotoficationData, ...result.Result]);
+          // Functional update + de-dup by Id so paging/refresh never double-counts.
+          setmyNotoficationData(prev => {
+            const base = pageSize === 1 ? [] : prev;
+            const seen = new Set(base.map(n => n.Id));
+            return [...base, ...(result.Result || []).filter(n => !seen.has(n.Id))];
+          });
           console.log(JSON.stringify(result.Result), 'HELLOWWW');
           //toast.current.hideAll();
           //toast.current.show(result?.Message);
@@ -159,8 +167,7 @@ const MyNotification = props => {
     let newArr = [...myNotoficationData];
     // alert(newArr[0].IsRead);
     //alert(index + 'id' + id);
-    newArr[index].IsRead = true;
-    newArr[index].IsSeen = true;
+    newArr[index] = { ...newArr[index], IsRead: true, IsSeen: true };
 
     setmyNotoficationData(newArr);
     notificationRead(id);
@@ -199,13 +206,10 @@ const MyNotification = props => {
   };
 
   const fetchData = () => {
-    setmyNotoficationData([]);
-
     setIsFetching(false);
-    setTimeout(() => {
-      setOffsetproperty(10000);
-      setOffsetproperty(offsetproperty * 0 + 1);
-    }, 1000);
+    // Reload page 1 directly (setting the offset 10000 -> 1 got batched into a no-op).
+    setOffsetproperty(1);
+    getNotification(1);
   };
 
   const onRefresh = () => {
@@ -216,7 +220,7 @@ const MyNotification = props => {
 
   const { gutter, isPhone } = useDevice();
   const bottomInset = useBottomInset();
-  const unseenCount = myNotoficationData.filter(n => n.IsRead === false).length;
+  const unseenCount = myNotoficationData.filter(n => !n.IsRead).length;
 
   const renderList = ({ item, index }) => {
     const unread = item.IsRead === false;
