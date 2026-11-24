@@ -583,7 +583,51 @@ const HomeScreen = props => {
         console.log('error', error)
       });
   };
-  const SelfassignOrder = async id => {
+  // After a QR self-assign from Home, find the scanned order in this rider's
+  // orders and open it so Order Detail picks it up (or asks for its OTP).
+  const startPickupAfterScan = (orderNo, assigned) => {
+    var myHeaders = new Headers();
+    myHeaders.append('Content-Type', 'application/json');
+    myHeaders.append(
+      'Authorization',
+      `Bearer ${userSuccessData?.Result?.AuthData?.TokenInfo?.Token}`,
+    );
+    var requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: JSON.stringify({
+        paging: { search: '', pageNumber: 1, pageSize: 100 },
+        deliveryStaffId: userSuccessData?.Result?.RestaurantDeliveryStaff?.Id,
+        requireNewOrders: true,
+      }),
+      redirect: 'follow',
+    };
+    fetch(`${BaseUrl}Partner/DeliveryStaff/Order`, requestOptions)
+      .then(response => response.json())
+      .then(result => {
+        const order = (result?.Result || []).find(
+          o => String(o?.OrderNo).trim() === String(orderNo).trim(),
+        );
+        if (order) {
+          props.navigation.navigate('OrderDetail', {
+            orderId: order.Id,
+            pastOrde: true,
+            autoPickup: true,
+            scannedOrderNo: orderNo,
+          });
+        } else if (assigned) {
+          // Assigned but not in the list yet: tell the rider how to finish.
+          dispatch(
+            DataAction.ToastMessageSenderScreenAction(
+              `${HardCode.Order} ${orderNo} ${HardCode.OpenToPickUp}`,
+            ),
+          );
+        }
+      })
+      .catch(error => console.log('error', error));
+  };
+
+  const SelfassignOrder = async (id, pickupAfter) => {
     if (id === '') {
       dispatch(
         DataAction.ToastMessageSenderScreenAction(HardCode.PleaseEnterAOrderNo),
@@ -620,10 +664,15 @@ const HomeScreen = props => {
             setSelfAssignpopupRider(false);
             dispatch(
               DataAction.ToastMessageSenderScreenAction(
-                `${id} ${HardCode.AssignedSuccessfully}`,
+                pickupAfter
+                  ? `${HardCode.PickingUpOrder} ${id}…`
+                  : `${HardCode.Order} ${id} ${HardCode.AssignedSuccessfully}`,
               ),
             );
             onRefresh();
+            if (pickupAfter) {
+              startPickupAfterScan(id, true);
+            }
           } else if (result.Status === 'Error') {
             setAssignorderloader(false);
             setOrderId('');
@@ -633,6 +682,10 @@ const HomeScreen = props => {
             dispatch(
               DataAction.ToastMessageSenderScreenAction(result.Message),
             );
+            // e.g. already assigned to this rider: still continue to pickup
+            if (pickupAfter) {
+              startPickupAfterScan(id, false);
+            }
           }
         })
         .catch(error => {
@@ -642,7 +695,7 @@ const HomeScreen = props => {
           setOrderId('');
           setSelfAssignpopupRider(false);
           dispatch(
-            DataAction.ToastMessageSenderScreenAction('Something went wrong. Try again'),
+            DataAction.ToastMessageSenderScreenAction(HardCode.SomethingWentWrong),
           );
           console.log('error', error);
           // dispatch({
@@ -879,6 +932,7 @@ const HomeScreen = props => {
                     props.navigation.navigate('OrderDetail', {
                       orderId: item.Id,
                       pastOrde: true,
+                      autoPickup: true,
                     })
                   }
                   Currency={userInfo?.Result?.RestaurantBranch?.Currency}
@@ -905,7 +959,7 @@ const HomeScreen = props => {
       {/* The round QR FAB becomes a bottom-bar button (same setshowqr handler). */}
       <BottomBar>
         <AuthButton
-          title={HardCode.ScanQRCode}
+          title={HardCode.ScanToPickUp}
           container={isPhone ? style.qrBtnPhone : style.qrBtnTablet}
           rightIcon={
             <FontAwesome5 name="qrcode" size={20} color={C.surface} />
@@ -976,7 +1030,7 @@ const HomeScreen = props => {
           setshowqr(false);
           setOrderId(code);
           console.log('code' + code);
-          SelfassignOrder(code);
+          SelfassignOrder(code, true);
         }}
         pressback={code => {
           setshowqr(false);

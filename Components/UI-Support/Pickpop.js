@@ -37,7 +37,7 @@ const Pickpop = props => {
               <IconTile name="help-circle" />
               <Paragraph
                 style={dialogStyles.message}
-                text={`${HardCode.AreYouSureYouHave} ${props.type} ${HardCode.thisOrder}`}
+                text={`${HardCode.AreYouSureYouHave} ${String(props.type).toLowerCase()} ${HardCode.thisOrder}`}
               />
             </View>
             <DialogFooter>

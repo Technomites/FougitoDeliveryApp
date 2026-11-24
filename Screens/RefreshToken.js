@@ -17,6 +17,7 @@ import * as AuthAction from '../Store/Auth/AuthAction';
 import { navigationRef } from "../Navigaor/MainNavigation";
 import { DialogCard, DialogFooter, IconTile, dialogStyles } from "../Components/UI-Support/Dialog";
 import { C, F } from "../Constants/tokens";
+import { HardCode } from "../Constants/texting";
 const RefreshToken = (props) => {
 
     const AuthTokenStateDispath = useSelector(state => state.auth.AuthTokenStateDispath);
@@ -137,7 +138,7 @@ const RefreshToken = (props) => {
                             }
                         />
                         <Text style={styles.modalText}>
-                            Your session has been expired due to inactivity
+                            {HardCode.SessionExpired}
                         </Text>
                     </View>
                     <DialogFooter>
@@ -148,7 +149,7 @@ const RefreshToken = (props) => {
                                     color={Color.btnBgColor}
                                 />
                             </View> :
-                            <AuthButton title={'Refresh Session'}
+                            <AuthButton title={HardCode.RefreshSession}
                                 container={dialogStyles.flexBtn}
                                 iconName="refresh-cw"
                                 onPress={() => {

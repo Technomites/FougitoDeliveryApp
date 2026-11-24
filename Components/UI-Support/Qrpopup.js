@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Dimensions,
   PermissionsAndroid,
+  Platform,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import AuthButton from './AuthButton';
@@ -21,7 +22,7 @@ import {
   useCodeScanner,
 } from 'react-native-vision-camera';
 import { HardCode } from '../../Constants/texting';
-import { C } from '../../Constants/tokens';
+import { C, F } from '../../Constants/tokens';
 import useLayout from '../useLayout';
 import { DialogCard, DialogFooter, IconTile, dialogStyles } from './Dialog';
 const Qrpopup = props => {
@@ -37,8 +38,14 @@ const Qrpopup = props => {
   const codeScanner = useCodeScanner({
     codeTypes: ['qr'],
     onCodeScanned: (codes) => {
-      if (codes.length > 0) {
-         setQrvalue(codes[0].value);
+      // A code entering the frame half-visible/blurred is reported with no
+      // decoded value; only accept a real string (this caused "invalid QR" on
+      // the first scan).
+      const hit = codes.find(
+        c => typeof c?.value === 'string' && c.value.trim() !== '',
+      );
+      if (hit) {
+        setQrvalue(hit.value.trim());
       }
     },
   });
@@ -115,6 +122,7 @@ const Qrpopup = props => {
             <View style={[styles.corner, styles.br]} />
             <View style={styles.scanLine} />
           </View>
+          <Text style={styles.hint}>{HardCode.ScanHint}</Text>
         </View>
 
         <TransparentHeader
@@ -207,6 +215,14 @@ const styles = StyleSheet.create({
   tr: { right: 0, top: 0, borderRightWidth: 6, borderTopWidth: 6 },
   bl: { left: 0, bottom: 0, borderLeftWidth: 6, borderBottomWidth: 6 },
   br: { right: 0, bottom: 0, borderRightWidth: 6, borderBottomWidth: 6 },
+  hint: {
+    marginTop: 24,
+    paddingHorizontal: 24,
+    textAlign: 'center',
+    color: C.surface,
+    fontFamily: F.bold,
+    fontSize: 16,
+  },
   scanLine: {
     position: 'absolute',
     left: 12,

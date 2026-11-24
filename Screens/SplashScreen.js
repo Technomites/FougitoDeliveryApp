@@ -56,7 +56,7 @@ const SplashScreen = props => {
   const checkLocationEnabled = async () => {
     const openSetting = () => {
       Linking.openSettings().catch(() => {
-        Alert.alert('Error', 'Unable to open settings');
+        Alert.alert(HardCode.UnableToOpenSettings);
       });
     };
     const status = await Geolocation.requestAuthorization('whenInUse');
@@ -70,11 +70,11 @@ const SplashScreen = props => {
 
     if (status === 'disabled') {
       Alert.alert(
-        `Turn on Location Services to allow app to determine your location.`,
+        HardCode.TurnOnLocationServicesToAllowBakeryAppToDetermineYourLocation,
         '',
         [
-          { text: 'Go to Settings', onPress: openSetting },
-          { text: "Don't Use Location", onPress: () => { } },
+          { text: HardCode.GoToSettings, onPress: openSetting },
+          { text: HardCode.DontUseLocation, onPress: () => { } },
         ],
       );
     }

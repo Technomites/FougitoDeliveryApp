@@ -331,6 +331,7 @@ export default function NewOrders(props) {
                       props.navigation.navigate('OrderDetail', {
                         orderId: item.Id,
                         pastOrde: true,
+                        autoPickup: true,
                       })
                     }
                     onModelPopUp={changestatus}

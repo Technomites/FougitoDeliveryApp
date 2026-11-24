@@ -275,7 +275,7 @@ const PayToComplete = props => {
         deatilsresult?.CouponDiscount.toFixed(2),
       )}
       <View style={styles.totalRow}>
-        <SubHeading style={styles.para2} text={HardCode.Total + ' Amount'} />
+        <SubHeading style={styles.para2} text={HardCode.Total} />
         <SubHeading
           style={[styles.para2, styles.num]}
           text={
@@ -408,7 +408,7 @@ const PayToComplete = props => {
                 }}
                 iconName="key"
                 container={styles.stackBtn}
-                title={'Room Payment'}
+                title={HardCode.ChargeToRoom}
               />
             }
           </>)
@@ -491,22 +491,21 @@ const PayToComplete = props => {
                 />
               </Text>
             </View>
-            <View style={styles.modalFooter}>
+            <View style={[styles.modalFooter, dialog.phone && styles.footerStack]}>
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => setMdoalVisible(!MdoalVisible)}
-                style={dialogStyles.outlineBtn}>
+                style={[dialogStyles.outlineBtn, dialog.phone && styles.stackItem]}>
                 <Heading style={dialogStyles.outlineText} text={HardCode.CLOSE} />
                 <Feather name="x" size={20} color={C.ink} />
               </TouchableOpacity>
               {loader ? (
-                <View style={styles.loaderBox}>
+                <View style={[styles.loaderBox, dialog.phone && styles.stackItem]}>
                   <ActivityIndicator size={'large'} color={Color.loaderColor} />
                 </View>
               ) : (
                 <AuthButton
-                  container={styles.flexBtn}
-                  compact={dialog.phone}
+                  container={dialog.phone ? styles.stackBtn : styles.flexBtn}
                   onPress={() => {
                     if (cardPay == true) {
                       CardPayment()
@@ -759,5 +758,8 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   flexBtn: { flex: 1, width: undefined },
+  // Phone dialog footer: primary on top, Close below, both full width.
+  footerStack: { flexDirection: 'column-reverse', alignItems: 'stretch' },
+  stackItem: { flex: 0, alignSelf: 'stretch' },
   loaderBox: { flex: 1, height: 56, justifyContent: 'center', alignItems: 'center' },
 });

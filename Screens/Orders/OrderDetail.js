@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   SafeAreaView,
@@ -69,6 +69,11 @@ const data = [
 
 export default function OrderDetail(props) {
   const pastOrde = props?.route?.params?.pastOrde;
+  // Set by the Home / New Orders tiles: start pickup (QR or OTP) right away.
+  const autoPickup = props?.route?.params?.autoPickup;
+  const autoPickupDone = useRef(false);
+  // Set by Home's Scan QR Code: the order's QR was already scanned there.
+  const scannedOrderNo = props?.route?.params?.scannedOrderNo;
   const orderId = props?.route?.params?.orderId
     ? props?.route?.params?.orderId
     : NotificationDataObj?.OrderId;
@@ -217,6 +222,12 @@ export default function OrderDetail(props) {
 
   const ChangeStatusAPi = () => {
     setLoader(true);
+    // Status 4 (picked up) is sent for these statuses; used for the confirmation message.
+    const pickingUp =
+      orderStatus === 'Pending' || orderStatus === 'Confirmed' || orderStatus === 'Preparing' || orderStatus === 'FoodReady';
+    // Opened by Home's "Scan & pick up": the order was just assigned as well.
+    const fromHomeScan =
+      !!scannedOrderNo && String(scannedOrderNo).trim() == String(deatilsresult?.OrderNo).trim();
 
     var myHeaders = new Headers();
     myHeaders.append(
@@ -247,12 +258,26 @@ export default function OrderDetail(props) {
           if (result?.Result?.Status === 'Delivered') {
             setVisible(true);
           }
+          if (pickingUp) {
+            dispatch(
+              DataAction.ToastMessageSenderScreenAction(
+                `${HardCode.Order} ${deatilsresult?.OrderNo || ''} ${fromHomeScan ? HardCode.AssignedAndPickedUp : HardCode.OrderPickedUp}`,
+              ),
+            );
+          }
           OrderDeatils();
           // onRefresh();
         } else {
           setLoader(false);
           setPickedup(false);
           setMdoalVisible(false);
+          if (pickingUp) {
+            dispatch(
+              DataAction.ToastMessageSenderScreenAction(
+                result?.Message || HardCode.PickupFailed,
+              ),
+            );
+          }
         }
       })
       .catch(error => {
@@ -436,11 +461,11 @@ export default function OrderDetail(props) {
 
     if (status === 'disabled') {
       Alert.alert(
-        'Turn On Location Services To Allow this app To determine your location',
+        HardCode.TurnOnLocationServicesToAllowBakeryAppToDetermineYourLocation,
         '',
         [
-          { text: 'Go To Settings', onPress: openSetting },
-          { text: 'Dont Use Location', onPress: () => { } },
+          { text: HardCode.GoToSettings, onPress: openSetting },
+          { text: HardCode.DontUseLocation, onPress: () => { } },
         ],
       );
     }
@@ -621,7 +646,7 @@ export default function OrderDetail(props) {
           'coupon',
         )}
       <View style={styles.totalRow}>
-        <SubHeading style={styles.totalText} text={HardCode.Total + ' Amount'} />
+        <SubHeading style={styles.totalText} text={HardCode.Total} />
         <SubHeading
           style={[styles.totalText, styles.num]}
           text={
@@ -636,51 +661,10 @@ export default function OrderDetail(props) {
     <>
       {deliveryMan !== '' && (
         <View style={[styles.card, styles.rowBetween]}>
-          <SubHeading style={styles.infoLabel} text={'Order Status'} />
+          <SubHeading style={styles.infoLabel} text={HardCode.OrderStatus} />
           <SubHeading style={styles.infoValue} text={orderStatus} />
         </View>
       )}
-      {orderStatus === 'Pending' || orderStatus === 'Confirmed' || orderStatus === 'Preparing' || orderStatus === 'FoodReady' ?
-        <View style={styles.card}>
-          <View style={styles.pickupHead}>
-            <IconTile name="map-pin" size={44} iconSize={20} />
-            <View style={styles.flexMin}>
-              <SubHeading
-                style={styles.pickupName}
-                text={resdeatils?.NameAsPerTradeLicense}
-              />
-              <SubHeading
-                style={styles.pickupSub}
-                text={resdeatils?.Address}
-                numberOfLines={2}
-              />
-            </View>
-          </View>
-          <TouchableOpacity
-            style={[styles.outlineBtn48, tabletPortrait && styles.outlineBtn48Fixed]}
-            onPress={
-              () =>
-                Linking.openURL(
-                  `http://www.google.com/maps/place/${resdeatils?.Latitude},${resdeatils?.Longitude}`,
-                )
-              // props.navigation.navigate('Location', {
-              //   locationlat: Latitude,
-              //   locationlong: Longitude,
-              // })
-            }>
-            <SubHeading numberOfLines={1} style={styles.outlineBtnText} text={'Get Direction'} />
-            <View style={styles.btnIcon}>
-              <Feather name="navigation" size={18} color={C.ink} />
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={1}
-            // onPress={() => setInfoMdoalVisible(!infoMdoalVisible)}
-            disabled={true}
-            style={styles.hiddenInfo}>
-            <SubHeading style={styles.outlineBtnText} text={HardCode.ViewInfo} />
-          </TouchableOpacity>
-        </View> : null}
       {orderStatus === 'OnTheWay' &&
         <View style={styles.card}>
           <View style={styles.pickupHead}>
@@ -698,7 +682,7 @@ export default function OrderDetail(props) {
           </View>
           <View style={tabletPortrait ? styles.btnRow : styles.btnStack}>
             <TouchableOpacity
-              style={[styles.outlineBtn48, tabletPortrait ? styles.outlineBtn48Fixed : styles.stackBtn]}
+              style={[styles.outlineBtn48, tabletPortrait ? styles.flexBtn : styles.stackBtn]}
               onPress={
                 () =>
                   Linking.openURL(
@@ -709,7 +693,7 @@ export default function OrderDetail(props) {
                 //   locationlong: Longitude,
                 // })
               }>
-              <SubHeading numberOfLines={1} style={styles.outlineBtnText} text={'Get Direction'} />
+              <SubHeading numberOfLines={1} style={styles.outlineBtnText} text={HardCode.GetDirection} />
               <View style={styles.btnIcon}>
                 <Feather name="navigation" size={18} color={C.ink} />
               </View>
@@ -717,155 +701,15 @@ export default function OrderDetail(props) {
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => setInfoMdoalVisible(!infoMdoalVisible)}
-              style={[styles.outlineBtn48, tabletPortrait ? styles.outlineBtn48Fixed : styles.stackBtn]}>
+              style={[styles.outlineBtn48, tabletPortrait ? styles.flexBtn : styles.stackBtn]}>
               <SubHeading numberOfLines={1} style={styles.outlineBtnText} text={HardCode.ViewInfo} />
               <View style={styles.btnIcon}>
                 <Feather name="info" size={18} color={C.ink} />
               </View>
             </TouchableOpacity>
-          </View>
-        </View>}
-    </>
-  );
-
-  const contactBlock = (
-    <View
-      style={{
-        gap: 12,
-        flexDirection:
-          deatilsresult?.Status === 'Pending' ||
-            deatilsresult?.Status === null ||
-            deatilsresult?.Status === 'Confirmed' ||
-            deatilsresult?.Status === 'Preparing'
-            ? 'column'
-            : 'column-reverse',
-      }}>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Restaurant Info</Text>
-        <View style={styles.rowBetween}>
-          <Text style={styles.capsLabel}>Name</Text>
-          <Text style={styles.capsLabel}>Phone Number</Text>
-        </View>
-        <View style={styles.rowBetween}>
-          <Text style={[styles.contactValue, styles.flexMin]}>
-            {deatilsresult?.RestaurantBranch?.NameAsPerTradeLicense}{' '}
-          </Text>
-          <Text style={styles.contactValue}>
-            {deatilsresult?.RestaurantBranch?.OrderingPhoneNumber}
-          </Text>
-        </View>
-        <View style={styles.btnRow}>
-          <TouchableOpacity
-            onPress={() => {
-              Linking.openURL(
-                `tel:${deatilsresult?.RestaurantBranch?.OrderingPhoneNumber}`,
-              );
-            }}
-            style={[styles.outlineBtn48, styles.flexBtn]}>
-            <View style={styles.flexMin}>
-              <Text numberOfLines={1} style={styles.outlineBtnText}>
-                Call Restaurant
-              </Text>
-              {/* <Text style={{ color: Color.white, fontFamily: FontFamily.Medium, fontSize: fontSize.twelve }}>18 AED</Text> */}
-            </View>
-            <View style={styles.phoneTile}>
-              <FontAwesome5 name="phone" size={14} color={C.surface} />
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.square48}
-            onPress={() => {
-              console.log('Pressed Directions');
-              showLocation({
-                sourceLatitude: latitudenew,
-                sourceLongitude: longitudenew,
-                latitude: restaurantLat, // Example: White House
-                longitude: restaurantLng,
-                title: 'Restaurant Location',
-                googleForceLatLon: true,        // ✅ force Google to use lat/lon instead of place names
-                alwaysIncludeGoogle: true,
-                dialogTitle: 'Open in Maps',
-                dialogMessage: 'Select an app to get directions',
-                cancelText: 'Cancel',
-              });
-            }}>
-            <FontAwesome5 name="directions" size={22} color={C.accent} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.square48}
-            onPress={() => {
-              let URL =
-                'whatsapp://send?text=' +
-                `Hello` +
-                '&phone=' +
-                deatilsresult?.RestaurantBranch?.OrderingPhoneNumber;
-              Linking.openURL(URL);
-            }}>
-            <FontAwesome name="whatsapp" size={24} color={'#25D366'} />
-          </TouchableOpacity>
-        </View>
-      </View>
-      {/* Customer Info */}
-      {orderStatus === 'Delivered' ? null :
-        (<View style={styles.card}>
-          <Text style={styles.cardTitle}>Customer Info</Text>
-          <View style={styles.rowBetween}>
-            <Text style={styles.capsLabel}>Name</Text>
-            <Text style={styles.capsLabel}>Phone Number</Text>
-          </View>
-          <View style={styles.rowBetween}>
-            <Text style={[styles.contactValue, styles.flexMin]}>
-              {deatilsresult?.CustomerName}{' '}
-            </Text>
-            <Text style={styles.contactValue}>
-              {deatilsresult?.CustomerContact}
-            </Text>
-          </View>
-          <View style={styles.btnRow}>
+            {/* WhatsApp the customer (same message as the old Customer Info tile) */}
             <TouchableOpacity
-              onPress={() => {
-                Linking.openURL(`tel:${deatilsresult?.CustomerContact}`);
-              }}
-              style={[styles.outlineBtn48, styles.flexBtn]}>
-              <View style={styles.flexMin}>
-                <Text numberOfLines={1} style={styles.outlineBtnText}>
-                  Call Customer
-                </Text>
-                {/* <Text style={{ color: Color.white, fontFamily: FontFamily.Medium, fontSize: fontSize.twelve }}>18 AED</Text> */}
-              </View>
-              <View style={styles.phoneTile}>
-                <FontAwesome5 name="phone" size={14} color={C.surface} />
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.square48}
-              onPress={() => {
-                // console.log(
-                //   'Pressed Directions',
-                //   latitude + " " +
-                //   longitude + " " +
-                //   customerLat + " " +
-                //   customerLng
-                // );
-                // return
-                showLocation({
-                  sourceLatitude: latitudenew,
-                  sourceLongitude: longitudenew,
-                  latitude: customerLat, // destination latitude
-                  longitude: customerLng, // destination longitude
-                  title: 'Restaurant Location',
-                  googleForceLatLon: true,        // ✅ force Google to use lat/lon instead of place names
-                  alwaysIncludeGoogle: true,
-                  dialogTitle: 'Open in Maps',
-                  dialogMessage: 'Select an app to get directions',
-                  cancelText: 'Cancel',
-                });
-              }}>
-              <FontAwesome5 name="directions" size={22} color={C.accent} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.square48}
+              activeOpacity={0.7}
               onPress={() => {
                 let URL =
                   'whatsapp://send?text=' +
@@ -873,12 +717,16 @@ export default function OrderDetail(props) {
                   '&phone=' +
                   deatilsresult?.CustomerContact;
                 Linking.openURL(URL);
-              }}>
-              <FontAwesome name="whatsapp" size={24} color={'#25D366'} />
+              }}
+              style={[styles.outlineBtn48, tabletPortrait ? styles.flexBtn : styles.stackBtn]}>
+              <SubHeading numberOfLines={1} style={styles.outlineBtnText} text={HardCode.WhatsApp} />
+              <View style={styles.btnIcon}>
+                <FontAwesome name="whatsapp" size={20} color={'#25D366'} />
+              </View>
             </TouchableOpacity>
           </View>
-        </View>)}
-    </View>
+        </View>}
+    </>
   );
 
   // Info rows (Hotel / Room / Payment Method / Payment Status / Order Status).
@@ -936,7 +784,7 @@ export default function OrderDetail(props) {
         <View style={styles.infoCard}>
           {deatilsresult?.HotelsAndMallsRoomId && (
             <View style={styles.infoRow}>
-              <SubHeading style={styles.infoLabel} text={'Hotel Name'} />
+              <SubHeading style={styles.infoLabel} text={HardCode.HotelName} />
               <SubHeading
                 style={[styles.infoValue, { color: C.accentDeep }]}
                 text={deatilsresult?.HotelsAndMalls?.NameAsPerTradeLicense}
@@ -945,7 +793,7 @@ export default function OrderDetail(props) {
           )}
           {(deatilsresult?.HotelRoomId || deatilsresult?.HotelsAndMallsRoomId) && (
             <View style={[styles.infoRow, !!deatilsresult?.HotelsAndMallsRoomId && styles.infoRowTop]}>
-              <SubHeading style={styles.infoLabel} text={'Room No'} />
+              <SubHeading style={styles.infoLabel} text={HardCode.RoomNo} />
               <SubHeading
                 style={[styles.infoValue, { color: C.accentDeep }]}
                 text={deatilsresult?.HotelRoomId ? deatilsresult?.HotelRoomName : deatilsresult?.HotelsAndMallsRoomName}
@@ -1011,8 +859,7 @@ export default function OrderDetail(props) {
           onPress={() => {
             changestatus();
           }}
-          compact={isPhone}
-          container={landscape ? styles.panelBtn : styles.barBtn}
+          container={landscape || isPhone ? styles.panelBtn : styles.barBtn}
           iconName="check"
           title={HardCode.MARKASDELIVERED}
         />
@@ -1044,8 +891,7 @@ export default function OrderDetail(props) {
                   }
                 }
               }}
-              compact={isPhone}
-              container={landscape ? styles.panelBtn : styles.barBtn}
+              container={landscape || isPhone ? styles.panelBtn : styles.barBtn}
               title={
 
                 orderStatus === 'Pending' || orderStatus === 'Preparing' || orderStatus === 'Confirmed' || orderStatus === 'FoodReady'
@@ -1059,8 +905,7 @@ export default function OrderDetail(props) {
             <AuthButton
               variant="outline"
               iconName="x"
-              compact={isPhone}
-              container={landscape ? styles.panelBtn : styles.barBtn}
+              container={landscape || isPhone ? styles.panelBtn : styles.barBtn}
               onPress={() => {
                 setReasoningPopup(true);
               }}
@@ -1071,6 +916,31 @@ export default function OrderDetail(props) {
       )}
     </>
   );
+
+  // Same choice as the Pickup Order button (OTP when the order has no cashier
+  // and no QR scan, otherwise the QR scanner), run once per visit from a tile.
+  useEffect(() => {
+    if (!autoPickup || autoPickupDone.current || loader || !deatilsresult) {
+      return;
+    }
+    const prePickup =
+      orderStatus === 'Pending' || orderStatus === 'Preparing' || orderStatus === 'Confirmed' || orderStatus === 'FoodReady';
+    const scannedHere =
+      !!scannedOrderNo && String(scannedOrderNo).trim() == String(deatilsresult?.OrderNo).trim();
+    // From a tile: only when the Pickup Order button would show.
+    // From Home's scan: any pre-pickup status (the QR is the proof of pickup).
+    if (!actionsAllowed || !prePickup || (!scannedHere && showMarkDelivered)) {
+      return;
+    }
+    autoPickupDone.current = true;
+    if (deatilsresult?.RestaurantCashierStaffId == null && deatilsresult?.IsQRScan === false) {
+      setOTPmodal(true);
+    } else if (scannedHere) {
+      ChangeStatusAPi();
+    } else {
+      setshowqr(true);
+    }
+  }, [autoPickup, scannedOrderNo, loader, deatilsresult, orderStatus, actionsAllowed, showMarkDelivered]);
 
   const statusChip =
     !isPhone && !loader && deatilsresult && isMine ? (
@@ -1117,7 +987,6 @@ export default function OrderDetail(props) {
                   contentContainerStyle={[styles.column, { padding: 24, paddingBottom: 24 + (hasActions ? 0 : bottomInset) }]}>
                   {pickupBlock}
                   {infoBlock}
-                  {contactBlock}
                 </ScrollView>
                 {hasActions && (
                   <View style={[styles.panelActions, { paddingBottom: 16 + bottomInset }]}>{actionButtons}</View>
@@ -1140,7 +1009,6 @@ export default function OrderDetail(props) {
               {infoBlock}
               {itemsBlock}
               {billBlock}
-              {contactBlock}
               {/* onPress={() =>
                     props.navigation.navigate('OrderDetail', {
                       orderId: item.Id,
@@ -1153,18 +1021,18 @@ export default function OrderDetail(props) {
               <IconTile name="repeat" />
               <SubHeading
                 style={styles.reassignedText}
-                text={"This order has been reassigned to another rider."}
+                text={HardCode.OrderReassigned}
               />
             </View>
           )
       )}
       {!landscape && hasActions && (
-        <BottomBar style={styles.barReverse}>{actionButtons}</BottomBar>
+        <BottomBar style={isPhone ? styles.barStack : styles.barReverse}>{actionButtons}</BottomBar>
       )}
       <Qrpopup
         state={showqr}
         codescanned={code => {
-          if (code == deatilsresult?.OrderNo) {
+          if (String(code).trim() == String(deatilsresult?.OrderNo).trim()) {
             setshowqr(false);
             console.log('code' + code);
             // setPickedup(true);
@@ -1176,7 +1044,7 @@ export default function OrderDetail(props) {
             setshowqr(false);
             dispatch(
               DataAction.ToastMessageSenderScreenAction(
-                'Invalid QR Scanned'
+                HardCode.InvalidQr
               ),
             );
           }
@@ -1200,7 +1068,7 @@ export default function OrderDetail(props) {
               style={[styles.dialogCard, { width: otpDialog.width }]}>
               <View style={styles.dialogHeader}>
                 <Text style={[styles.dialogTitle, { fontSize: otpDialog.phone ? 22 : 26 }]}>
-                  Enter OTP
+                  {HardCode.EnterOtp}
                 </Text>
                 {/* Cross icon top-right */}
                 <TouchableWithoutFeedback onPress={() => setOTPmodal(false)}>
@@ -1213,7 +1081,7 @@ export default function OrderDetail(props) {
               <View style={styles.dialogBody}>
                 <TextInput
                   keyboardType="numeric"
-                  placeholder="Type here"
+                  placeholder={HardCode.OtpPlaceholder}
                   style={styles.otpInput}
                   placeholderTextColor={C.placeholder}
                   onChangeText={text => {
@@ -1231,7 +1099,7 @@ export default function OrderDetail(props) {
                   </View>
                 ) : (
                   <AuthButton
-                    title={'Submit'}
+                    title={HardCode.SUBMIT}
                     iconName="send"
                     container={styles.flexBtn}
                     onPress={() => {
@@ -1243,7 +1111,7 @@ export default function OrderDetail(props) {
                       } else {
                         dispatch(
                           DataAction.ToastMessageSenderScreenAction(
-                            'Invalid OTP',
+                            HardCode.InvalidOtp,
                           ),
                         );
                       }
@@ -1287,22 +1155,21 @@ export default function OrderDetail(props) {
                 />
               </Text>
             </View>
-            <View style={styles.dialogFooter}>
+            <View style={[styles.dialogFooter, otpDialog.phone && styles.footerStack]}>
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => setMdoalVisible(!MdoalVisible)}
-                style={dialogStyles.outlineBtn}>
+                style={[dialogStyles.outlineBtn, otpDialog.phone && styles.stackItem]}>
                 <Heading style={dialogStyles.outlineText} text={HardCode.CLOSE} />
                 <Feather name="x" size={20} color={C.ink} />
               </TouchableOpacity>
               {loader ? (
-                <View style={styles.loaderBox}>
+                <View style={[styles.loaderBox, otpDialog.phone && styles.stackItem]}>
                   <ActivityIndicator size={'large'} color={Color.loaderColor} />
                 </View>
               ) : (
                 <AuthButton
-                  container={styles.flexBtn}
-                  compact={otpDialog.phone}
+                  container={otpDialog.phone ? styles.panelBtn : styles.flexBtn}
                   onPress={() => {
                     ChangeStatusAPi();
                   }}
@@ -1800,6 +1667,11 @@ const styles = StyleSheet.create({
   panelBtn: { height: 56, alignSelf: 'stretch', width: '100%' },
   barBtn: { flex: 1, width: undefined },
   barReverse: { flexDirection: 'row-reverse' },
+  // Phone: actions stacked full width so long labels never truncate.
+  barStack: { flexDirection: 'column', alignItems: 'stretch' },
+  // Phone dialog footer: primary on top, Close below, both full width.
+  footerStack: { flexDirection: 'column-reverse', alignItems: 'stretch' },
+  stackItem: { flex: 0, alignSelf: 'stretch' },
   sectionHead: {
     flexDirection: 'row',
     justifyContent: 'space-between',
