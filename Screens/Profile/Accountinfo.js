@@ -10,6 +10,7 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Keyboard,
+  Platform,
 } from 'react-native';
 import Color from '../../Constants/Color';
 import SubHeading from '../../Components/UI-Support/SubHeading';

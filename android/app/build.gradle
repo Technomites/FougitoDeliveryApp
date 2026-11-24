@@ -58,7 +58,7 @@ react {
 /**
 * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
 */
-def enableProguardInReleaseBuilds = false
+def enableProguardInReleaseBuilds = true // R8: Play "DEX code optimization / obfuscation"
  
 /**
 * The preferred build flavor of JavaScriptCore (JSC)
@@ -83,8 +83,8 @@ android {
         applicationId "com.fougitodeliver"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 54
-        versionName "54.0"
+        versionCode 56
+        versionName "56.0"
     }
   signingConfigs {
           release {
@@ -111,7 +111,7 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
-    implementation 'com.facebook.fresco:animated-gif:2.6.0'
+    implementation 'com.facebook.fresco:animated-gif:3.4.0' // match React Native's Fresco (16 KB aligned)
     implementation platform("com.google.firebase:firebase-bom:32.8.1")
     implementation("com.google.firebase:firebase-messaging")
     implementation("com.google.firebase:firebase-firestore")

@@ -66,4 +66,7 @@ buck-out/
 !.yarn/plugins
 !.yarn/releases
 !.yarn/sdks
-!.yarn/versionsandroid/app/.cxx/
+!.yarn/versions
+
+# Android native build output
+android/app/.cxx/

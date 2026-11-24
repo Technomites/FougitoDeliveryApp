@@ -1,1 +1,0 @@
-Y:\android\app\build\intermediates\cxx\RelWithDebInfo\t4464p2s\obj\x86_64
