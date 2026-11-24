@@ -70,3 +70,6 @@ buck-out/
 
 # Android native build output
 android/app/.cxx/
+
+# Machine-specific Node path for Xcode
+ios/.xcode.env.local

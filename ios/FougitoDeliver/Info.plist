@@ -42,11 +42,11 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Fougito Deliver uses the camera to scan order QR codes at pickup and to take your profile photo.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>Fougito Deliver uses your location to show it on the map and share delivery progress with the restaurant and customer while you are delivering.</string>
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>Fougito Deliver uses your location to show it on the map and share delivery progress with the restaurant and customer while you are delivering.</string>
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>Fougito Deliver uses your location to show it on the map and share delivery progress with the restaurant and customer while you are delivering.</string>
+	<string>Fougito Deliver uses your location to show it on the map and share delivery progress with the restaurant and customer while you are delivering.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Fougito Deliver uses your location to show it on the map and share delivery progress with the restaurant and customer while you are delivering.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Fougito Deliver uses your location to show it on the map and share delivery progress with the restaurant and customer while you are delivering.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Fougito Deliver needs access to your photos so you can choose a profile picture.</string>
 	<key>UIAppFonts</key>
@@ -87,6 +87,23 @@
 		<string>Satoshi-MediumItalic.otf</string>
 		<string>Satoshi-Regular.otf</string>
 	</array>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>Default Configuration</string>
+					<key>UISceneDelegateClassName</key>
+					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-peripheral</string>

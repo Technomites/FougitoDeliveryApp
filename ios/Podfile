@@ -68,6 +68,17 @@ target 'FougitoDeliver' do
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
     end
   end
+    # Xcode 27+: let RNScreens resolve its relative "utils/RectUtil.h" include
+    installer.pods_project.targets.each do |target|
+      next unless target.name == 'RNScreens'
+      target.build_configurations.each do |config|
+        paths = config.build_settings['HEADER_SEARCH_PATHS'] || ['$(inherited)']
+        paths = [paths] if paths.is_a?(String)
+        paths << '"$(PODS_TARGET_SRCROOT)/common/cpp/react/renderer/components/rnscreens"'
+        config.build_settings['HEADER_SEARCH_PATHS'] = paths
+      end
+    end
+
     installer.pods_project.targets.each do |target|
       if target.name == 'BoringSSL-GRPC'
         target.source_build_phase.files.each do |file|
